@@ -33,7 +33,14 @@ serve(async (req) => {
       const from = message.from;
       const text = message.text || '';
 
-      console.log(`Message from chat_id: ${chat.id}, user: ${from.first_name} ${from.last_name || ''}, text: ${text}`);
+      const phoneNumberRaw: string | null = message.contact?.phone_number ?? null;
+      const phoneNumber = phoneNumberRaw
+        ? (phoneNumberRaw.startsWith('+') ? phoneNumberRaw : `+${phoneNumberRaw}`)
+        : null;
+
+      console.log(
+        `Message from chat_id: ${chat.id}, user: ${from.first_name} ${from.last_name || ''}, text: ${text}, phone: ${phoneNumber || 'n/a'}`
+      );
 
       // Save user info to database
       const { data: existingUser, error: selectError } = await supabase
@@ -55,6 +62,7 @@ serve(async (req) => {
             username: from.username || null,
             first_name: from.first_name || null,
             last_name: from.last_name || null,
+            phone_number: phoneNumber,
           });
 
         if (insertError) {
@@ -70,6 +78,7 @@ serve(async (req) => {
             username: from.username || existingUser.username,
             first_name: from.first_name || existingUser.first_name,
             last_name: from.last_name || existingUser.last_name,
+            phone_number: phoneNumber || existingUser.phone_number,
             updated_at: new Date().toISOString(),
           })
           .eq('chat_id', String(chat.id));
@@ -79,9 +88,30 @@ serve(async (req) => {
         }
       }
 
-      // If /start command, send welcome message
+      // If user shared phone number, confirm and remove keyboard
+      if (phoneNumber) {
+        const confirmMessage =
+          `Номер телефона сохранен: <b>${phoneNumber}</b>\n` +
+          `Теперь можно отправлять вам сообщения из приложения.`;
+
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chat.id,
+            text: confirmMessage,
+            parse_mode: 'HTML',
+            reply_markup: { remove_keyboard: true },
+          }),
+        });
+      }
+
+      // If /start command, send welcome + request phone number
       if (text === '/start') {
-        const welcomeMessage = `👋 Привет, ${from.first_name}!\n\nВаш Telegram ID: <b>${chat.id}</b>\n\nТеперь мы можем отправлять вам сообщения через этого бота.`;
+        const welcomeMessage =
+          `Привет, ${from.first_name}!\n\n` +
+          `Ваш Telegram ID: <b>${chat.id}</b>\n\n` +
+          `Чтобы связать Telegram с контактом в приложении, нажмите кнопку ниже и поделитесь номером телефона.`;
 
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
@@ -90,6 +120,11 @@ serve(async (req) => {
             chat_id: chat.id,
             text: welcomeMessage,
             parse_mode: 'HTML',
+            reply_markup: {
+              keyboard: [[{ text: 'Поделиться номером телефона', request_contact: true }]],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
           }),
         });
 
