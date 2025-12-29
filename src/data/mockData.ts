@@ -102,7 +102,7 @@ export const mockContacts: Contact[] = [
     name: 'Виктория Михайлова',
     contacts: [
       { type: 'whatsapp', value: '+79522245854' },
-      { type: 'telegram', value: '' }, // Ожидаем ID после /start
+      { type: 'telegram', value: '513094169' },
     ],
     tags: ['Тест'],
     created_at: '2025-12-29',
