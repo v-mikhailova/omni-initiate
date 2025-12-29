@@ -6,6 +6,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ChannelBadge } from './ChannelBadge';
+import { SendMessageModal } from './SendMessageModal';
 import { ChannelType, ConnectedChannel } from '@/types/chat';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ interface ChannelSelectorProps {
   connectedChannels: ConnectedChannel[];
   selectedChannelId?: string;
   onSelectChannel: (channelId: string) => void;
+  onSendMessage?: (channelId: string, message: string) => Promise<void>;
 }
 
 // Map channel types to display types (telegram_personal -> telegram)
@@ -37,10 +39,20 @@ export function ChannelSelector({
   connectedChannels,
   selectedChannelId,
   onSelectChannel,
+  onSendMessage,
 }: ChannelSelectorProps) {
   const [openType, setOpenType] = useState<DisplayChannelType | null>(null);
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [selectedChannelForMessage, setSelectedChannelForMessage] = useState<ConnectedChannel | null>(null);
 
   const selectedChannel = connectedChannels.find(ch => ch.id === selectedChannelId);
+
+  const handleChannelClick = (channel: ConnectedChannel) => {
+    onSelectChannel(channel.id);
+    setSelectedChannelForMessage(channel);
+    setMessageModalOpen(true);
+    setOpenType(null);
+  };
 
   // Get channels for a display type (includes telegram_personal for telegram)
   const getChannelsForDisplayType = (displayType: DisplayChannelType): ConnectedChannel[] => {
@@ -72,7 +84,7 @@ export function ChannelSelector({
             <ChannelBadge
               key={displayType}
               type={displayType}
-              onClick={() => onSelectChannel(channel.id)}
+              onClick={() => handleChannelClick(channel)}
               selected={selectedChannelId === channel.id}
               subtitle={isSelected ? getShortIdentifier(channel.identifier) : undefined}
             />
@@ -111,10 +123,7 @@ export function ChannelSelector({
                   <button
                     key={channel.id}
                     disabled={channel.status !== 'connected'}
-                    onClick={() => {
-                      onSelectChannel(channel.id);
-                      setOpenType(null);
-                    }}
+                    onClick={() => handleChannelClick(channel)}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
                       "hover:bg-accent",
@@ -152,6 +161,13 @@ export function ChannelSelector({
           </Popover>
         );
       })}
+
+      <SendMessageModal
+        open={messageModalOpen}
+        onOpenChange={setMessageModalOpen}
+        channel={selectedChannelForMessage}
+        onSend={onSendMessage}
+      />
     </div>
   );
 }
