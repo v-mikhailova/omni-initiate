@@ -9,11 +9,27 @@ import { ChannelBadge } from './ChannelBadge';
 import { ChannelType, ConnectedChannel } from '@/types/chat';
 import { cn } from '@/lib/utils';
 
+// Display types that are shown as badges (telegram_personal is grouped under telegram)
+type DisplayChannelType = 'telegram' | 'whatsapp' | 'max';
+
 interface ChannelSelectorProps {
   availableTypes: ChannelType[];
   connectedChannels: ConnectedChannel[];
   selectedChannelId?: string;
   onSelectChannel: (channelId: string) => void;
+}
+
+// Map channel types to display types (telegram_personal -> telegram)
+function getDisplayType(type: ChannelType): DisplayChannelType {
+  if (type === 'telegram_personal') return 'telegram';
+  return type as DisplayChannelType;
+}
+
+// Get unique display types from available types
+function getDisplayTypes(availableTypes: ChannelType[]): DisplayChannelType[] {
+  const displayTypes = new Set<DisplayChannelType>();
+  availableTypes.forEach(type => displayTypes.add(getDisplayType(type)));
+  return Array.from(displayTypes);
 }
 
 export function ChannelSelector({
@@ -22,14 +38,21 @@ export function ChannelSelector({
   selectedChannelId,
   onSelectChannel,
 }: ChannelSelectorProps) {
-  const [openType, setOpenType] = useState<ChannelType | null>(null);
+  const [openType, setOpenType] = useState<DisplayChannelType | null>(null);
 
   const selectedChannel = connectedChannels.find(ch => ch.id === selectedChannelId);
 
-  const getChannelsOfType = (type: ChannelType) => 
-    connectedChannels.filter(ch => ch.type === type);
+  // Get channels for a display type (includes telegram_personal for telegram)
+  const getChannelsForDisplayType = (displayType: DisplayChannelType): ConnectedChannel[] => {
+    if (displayType === 'telegram') {
+      return connectedChannels.filter(ch => ch.type === 'telegram' || ch.type === 'telegram_personal');
+    }
+    return connectedChannels.filter(ch => ch.type === displayType);
+  };
 
-  if (availableTypes.length === 0) {
+  const displayTypes = getDisplayTypes(availableTypes);
+
+  if (displayTypes.length === 0) {
     return (
       <span className="text-muted-foreground text-sm">—</span>
     );
@@ -37,18 +60,18 @@ export function ChannelSelector({
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {availableTypes.map((type) => {
-        const channelsOfType = getChannelsOfType(type);
+      {displayTypes.map((displayType) => {
+        const channelsOfType = getChannelsForDisplayType(displayType);
         const connectedOfType = channelsOfType.filter(ch => ch.status === 'connected');
-        const isSelected = selectedChannel?.type === type;
+        const isSelected = selectedChannel && getDisplayType(selectedChannel.type) === displayType;
         
         // If only one connected channel of this type, select it directly
         if (connectedOfType.length === 1) {
           const channel = connectedOfType[0];
           return (
             <ChannelBadge
-              key={type}
-              type={type}
+              key={displayType}
+              type={displayType}
               onClick={() => onSelectChannel(channel.id)}
               selected={selectedChannelId === channel.id}
               subtitle={isSelected ? getShortIdentifier(channel.identifier) : undefined}
@@ -59,14 +82,14 @@ export function ChannelSelector({
         // Multiple channels - show popover
         return (
           <Popover 
-            key={type} 
-            open={openType === type} 
-            onOpenChange={(open) => setOpenType(open ? type : null)}
+            key={displayType} 
+            open={openType === displayType} 
+            onOpenChange={(open) => setOpenType(open ? displayType : null)}
           >
             <PopoverTrigger asChild>
               <div className="relative">
                 <ChannelBadge
-                  type={type}
+                  type={displayType}
                   selected={isSelected}
                   subtitle={isSelected ? getShortIdentifier(selectedChannel!.identifier) : undefined}
                 />
