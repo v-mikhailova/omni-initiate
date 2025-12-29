@@ -90,6 +90,7 @@ export const mockContacts: Contact[] = [
     name: 'ss dd',
     contacts: [
       { type: 'whatsapp', value: '+79522245854' },
+      { type: 'telegram_personal', value: '+79522245854' },
     ],
     tags: [],
     created_at: '2025-12-29',
