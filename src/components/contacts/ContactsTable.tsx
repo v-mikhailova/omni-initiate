@@ -119,6 +119,7 @@ export function ContactsTable({
         {contact.contacts.map((c, idx) => (
           <span key={idx} className="inline-flex items-center gap-1 text-sm text-muted-foreground">
             {c.type === 'telegram' && <Send className="w-3 h-3 text-telegram" />}
+            {c.type === 'telegram_personal' && <Send className="w-3 h-3 text-telegram-personal" />}
             {c.type === 'whatsapp' && <Phone className="w-3 h-3 text-whatsapp" />}
             {c.type === 'max' && <Mail className="w-3 h-3 text-max" />}
             <span className="font-mono text-xs">{c.value}</span>
