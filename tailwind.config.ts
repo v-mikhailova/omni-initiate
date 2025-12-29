@@ -61,6 +61,10 @@ export default {
           DEFAULT: "hsl(var(--telegram))",
           foreground: "hsl(var(--telegram-foreground))",
         },
+        "telegram-personal": {
+          DEFAULT: "hsl(var(--telegram-personal))",
+          foreground: "hsl(var(--telegram-personal-foreground))",
+        },
         whatsapp: {
           DEFAULT: "hsl(var(--whatsapp))",
           foreground: "hsl(var(--whatsapp-foreground))",

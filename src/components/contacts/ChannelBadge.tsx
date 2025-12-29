@@ -1,4 +1,4 @@
-import { Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle, User } from 'lucide-react';
 import { ChannelType } from '@/types/chat';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ interface ChannelBadgeProps {
 
 const channelConfig: Record<ChannelType, { label: string; icon: React.ElementType }> = {
   telegram: { label: 'Telegram', icon: Send },
+  telegram_personal: { label: 'TG Personal', icon: User },
   whatsapp: { label: 'WhatsApp', icon: MessageCircle },
   max: { label: 'MAX', icon: MessageCircle },
 };
@@ -37,6 +38,7 @@ export function ChannelBadge({
         size === 'md' && "px-3 py-1.5 text-sm",
         selected && "ring-2 ring-offset-1",
         type === 'telegram' && selected && "ring-telegram",
+        type === 'telegram_personal' && selected && "ring-telegram",
         type === 'whatsapp' && selected && "ring-whatsapp",
         type === 'max' && selected && "ring-max",
       )}

@@ -50,6 +50,14 @@ export const mockConnectedChannels: ConnectedChannel[] = [
     status: 'connected',
     organization_id: 'org-1',
   },
+  {
+    id: 'ch-7',
+    type: 'telegram_personal',
+    display_name: 'Telegram Personal +7 (952) 224-5854',
+    identifier: '+79522245854',
+    status: 'connected',
+    organization_id: 'org-1',
+  },
 ];
 
 // Mock contacts
