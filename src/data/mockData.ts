@@ -102,6 +102,7 @@ export const mockContacts: Contact[] = [
     name: 'Рикман',
     contacts: [
       { type: 'telegram', value: '362032427' },
+      { type: 'telegram_personal', value: '+79522245854' },
     ],
     tags: [],
     created_at: '2025-11-18',
@@ -113,6 +114,7 @@ export const mockContacts: Contact[] = [
     name: 'Симкин Александр',
     contacts: [
       { type: 'telegram', value: '559843733' },
+      { type: 'telegram_personal', value: '+79522245854' },
       { type: 'whatsapp', value: '+79106200250' },
       { type: 'max', value: '4061763' },
     ],
@@ -128,6 +130,7 @@ export const mockContacts: Contact[] = [
     contacts: [
       { type: 'whatsapp', value: '+79161234567' },
       { type: 'telegram', value: '987654321' },
+      { type: 'telegram_personal', value: '+79522245854' },
     ],
     tags: ['Важный', 'B2B'],
     created_at: '2025-10-15',
