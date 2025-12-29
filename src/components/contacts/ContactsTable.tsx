@@ -225,6 +225,7 @@ export function ContactsTable({
                     connectedChannels={connectedChannels}
                     selectedChannelId={contact.preferred_channel_id}
                     onSelectChannel={(channelId) => onChannelSelect(contact.id, channelId)}
+                    contact={contact}
                   />
                 </TableCell>
                 <TableCell>

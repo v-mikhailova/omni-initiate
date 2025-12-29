@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { ChannelBadge } from './ChannelBadge';
 import { SendMessageModal } from './SendMessageModal';
-import { ChannelType, ConnectedChannel } from '@/types/chat';
+import { ChannelType, ConnectedChannel, Contact } from '@/types/chat';
 import { cn } from '@/lib/utils';
 
 // Display types that are shown as badges (telegram_personal is grouped under telegram)
@@ -19,6 +19,7 @@ interface ChannelSelectorProps {
   selectedChannelId?: string;
   onSelectChannel: (channelId: string) => void;
   onSendMessage?: (channelId: string, message: string) => Promise<void>;
+  contact?: Contact;
 }
 
 // Map channel types to display types (telegram_personal -> telegram)
@@ -40,6 +41,7 @@ export function ChannelSelector({
   selectedChannelId,
   onSelectChannel,
   onSendMessage,
+  contact,
 }: ChannelSelectorProps) {
   const [openType, setOpenType] = useState<DisplayChannelType | null>(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
@@ -166,6 +168,7 @@ export function ChannelSelector({
         open={messageModalOpen}
         onOpenChange={setMessageModalOpen}
         channel={selectedChannelForMessage}
+        contact={contact}
         onSend={onSendMessage}
       />
     </div>
