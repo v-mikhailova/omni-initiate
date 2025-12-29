@@ -99,12 +99,12 @@ export const mockContacts: Contact[] = [
   },
   {
     id: 'c-3',
-    name: 'ss dd',
+    name: 'Виктория Михайлова',
     contacts: [
       { type: 'whatsapp', value: '+79522245854' },
-      { type: 'telegram_personal', value: '+79522245854' },
+      { type: 'telegram', value: '' }, // Ожидаем ID после /start
     ],
-    tags: [],
+    tags: ['Тест'],
     created_at: '2025-12-29',
     last_message_at: null,
     updated_at: '2025-12-29',
