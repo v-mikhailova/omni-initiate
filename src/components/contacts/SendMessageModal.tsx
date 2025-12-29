@@ -37,14 +37,26 @@ export function SendMessageModal({
   const getChatId = (): string | null => {
     if (!contact || !channel) return null;
     
-    // Find the contact value that matches the channel type
-    const contactInfo = contact.contacts.find(c => {
-      if (channel.type === 'telegram' || channel.type === 'telegram_personal') {
-        return c.type === 'telegram' || c.type === 'telegram_personal';
-      }
-      return c.type === channel.type;
-    });
+    // For Telegram bot, we need numeric chat_id (user ID), not phone numbers
+    if (channel.type === 'telegram') {
+      // Find telegram contact with numeric ID (not phone number)
+      const telegramContact = contact.contacts.find(c => 
+        c.type === 'telegram' && !c.value.startsWith('+')
+      );
+      return telegramContact?.value || null;
+    }
     
+    // For telegram_personal, we need phone number
+    if (channel.type === 'telegram_personal') {
+      const personalContact = contact.contacts.find(c => 
+        c.type === 'telegram_personal' || 
+        (c.type === 'telegram' && c.value.startsWith('+'))
+      );
+      return personalContact?.value || null;
+    }
+    
+    // For other channels, find matching type
+    const contactInfo = contact.contacts.find(c => c.type === channel.type);
     return contactInfo?.value || null;
   };
 
