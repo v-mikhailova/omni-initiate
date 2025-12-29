@@ -46,6 +46,20 @@ export function SendMessageModal({
 
   const normalizeUsername = (value: string) => value.trim().replace(/^@/, '').toLowerCase();
 
+  const resolveTelegramChatIdByNumeric = async (chatIdRaw: string) => {
+    const chatId = chatIdRaw.trim();
+    if (!/^\d+$/.test(chatId)) return null;
+
+    const { data, error } = await supabase
+      .from('telegram_users')
+      .select('chat_id')
+      .eq('chat_id', chatId)
+      .maybeSingle();
+
+    if (error) return null;
+    return data?.chat_id ?? null;
+  };
+
   const resolveTelegramChatIdByUsername = async (usernameRaw: string) => {
     const username = normalizeUsername(usernameRaw);
     if (!username) return null;
@@ -85,7 +99,10 @@ export function SendMessageModal({
         ? (contact.contacts.find((c) => c.type === 'telegram' && !c.value.startsWith('+'))?.value?.trim() ?? '')
         : fallbackIdentifier;
 
-      if (/^\d+$/.test(telegramValue)) return telegramValue;
+      if (/^\d+$/.test(telegramValue)) {
+        const verified = await resolveTelegramChatIdByNumeric(telegramValue);
+        if (verified) return verified;
+      }
 
       // If we have @username (either in contact or in channel.identifier), resolve to chat_id.
       if (telegramValue) {

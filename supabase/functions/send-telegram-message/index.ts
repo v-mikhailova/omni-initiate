@@ -97,12 +97,14 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in send-telegram-message function:', errorMessage);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: errorMessage 
+      JSON.stringify({
+        success: false,
+        error: errorMessage,
       }),
       {
-        status: 400,
+        // Always return 200 so the web client can read the JSON error body
+        // without getting a generic "Edge function returned 400" wrapper error.
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
