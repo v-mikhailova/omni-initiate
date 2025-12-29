@@ -51,6 +51,8 @@
     /* Channel Colors */
     --telegram: 200 100% 45%;
     --telegram-foreground: 0 0% 100%;
+    --telegram-personal: 200 80% 55%;
+    --telegram-personal-foreground: 0 0% 100%;
     --whatsapp: 142 70% 45%;
     --whatsapp-foreground: 0 0% 100%;
     --max: 263 70% 50%;
@@ -107,6 +109,8 @@
 
     --telegram: 200 100% 50%;
     --telegram-foreground: 0 0% 100%;
+    --telegram-personal: 200 80% 60%;
+    --telegram-personal-foreground: 0 0% 100%;
     --whatsapp: 142 70% 50%;
     --whatsapp-foreground: 0 0% 100%;
     --max: 263 70% 55%;
@@ -140,6 +144,10 @@
 
   .channel-badge-telegram {
     @apply bg-[hsl(var(--telegram)/0.1)] text-[hsl(var(--telegram))] hover:bg-[hsl(var(--telegram)/0.2)];
+  }
+
+  .channel-badge-telegram_personal {
+    @apply bg-[hsl(var(--telegram-personal)/0.1)] text-[hsl(var(--telegram-personal))] hover:bg-[hsl(var(--telegram-personal)/0.2)];
   }
 
   .channel-badge-whatsapp {

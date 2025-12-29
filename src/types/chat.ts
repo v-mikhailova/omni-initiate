@@ -1,6 +1,6 @@
 // Types for Seven Tech Omnichannel Chat Center
 
-export type ChannelType = 'telegram' | 'whatsapp' | 'max';
+export type ChannelType = 'telegram' | 'telegram_personal' | 'whatsapp' | 'max';
 
 export type ChannelStatus = 'connected' | 'disconnected';
 
