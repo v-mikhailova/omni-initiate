@@ -5,8 +5,8 @@ export const mockConnectedChannels: ConnectedChannel[] = [
   {
     id: 'ch-1',
     type: 'telegram',
-    display_name: 'Telegram Bot @SevenTechBot',
-    identifier: '@SevenTechBot',
+    display_name: 'Telegram Bot @SevenTechCC_bot',
+    identifier: '@SevenTechCC_bot',
     status: 'connected',
     organization_id: 'org-1',
   },
