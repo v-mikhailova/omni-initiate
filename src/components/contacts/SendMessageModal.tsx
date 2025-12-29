@@ -110,11 +110,19 @@ export function SendMessageModal({
         if (byUsername) return byUsername;
       }
 
-      // Fallback: resolve by WhatsApp phone (after user shares phone in bot).
+      // Fallback: resolve by phone (after user shares phone in bot).
       if (contact) {
-        const whatsappPhone = contact.contacts.find((c) => c.type === 'whatsapp')?.value ?? '';
-        const byPhone = await resolveTelegramChatIdByPhone(whatsappPhone);
-        if (byPhone) return byPhone;
+        const phoneCandidates = [
+          contact.contacts.find((c) => c.type === 'whatsapp')?.value,
+          contact.contacts.find((c) => c.type === 'telegram_personal')?.value,
+          // Some contacts may store phone in telegram field (starts with +)
+          contact.contacts.find((c) => c.type === 'telegram' && c.value.startsWith('+'))?.value,
+        ].filter(Boolean) as string[];
+
+        for (const phoneCandidate of phoneCandidates) {
+          const byPhone = await resolveTelegramChatIdByPhone(phoneCandidate);
+          if (byPhone) return byPhone;
+        }
       }
 
       return null;
