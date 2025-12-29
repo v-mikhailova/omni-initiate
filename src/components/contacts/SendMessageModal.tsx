@@ -34,29 +34,91 @@ export function SendMessageModal({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getChatId = (): string | null => {
-    if (!contact || !channel) return null;
-    
-    // For Telegram bot, we need numeric chat_id (user ID), not phone numbers
+  const normalizePhone = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+
+    const cleaned = trimmed.replace(/[^\d+]/g, '');
+    if (!cleaned) return '';
+
+    return cleaned.startsWith('+') ? cleaned : `+${cleaned}`;
+  };
+
+  const normalizeUsername = (value: string) => value.trim().replace(/^@/, '').toLowerCase();
+
+  const resolveTelegramChatIdByUsername = async (usernameRaw: string) => {
+    const username = normalizeUsername(usernameRaw);
+    if (!username) return null;
+
+    const { data, error } = await supabase
+      .from('telegram_users')
+      .select('chat_id')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (error) return null;
+    return data?.chat_id ?? null;
+  };
+
+  const resolveTelegramChatIdByPhone = async (phoneRaw: string) => {
+    const phone = normalizePhone(phoneRaw);
+    if (!phone) return null;
+
+    const { data, error } = await supabase
+      .from('telegram_users')
+      .select('chat_id')
+      .eq('phone_number', phone)
+      .maybeSingle();
+
+    if (error) return null;
+    return data?.chat_id ?? null;
+  };
+
+  const resolveDestinationId = async (): Promise<string | null> => {
+    if (!channel) return null;
+
+    const fallbackIdentifier = (channel.identifier || '').trim();
+
+    // Telegram sending always needs numeric chat_id.
     if (channel.type === 'telegram') {
-      // Find telegram contact with numeric ID (not phone number)
-      const telegramContact = contact.contacts.find(c => 
-        c.type === 'telegram' && !c.value.startsWith('+')
-      );
-      return telegramContact?.value || null;
+      const telegramValue = contact
+        ? (contact.contacts.find((c) => c.type === 'telegram' && !c.value.startsWith('+'))?.value?.trim() ?? '')
+        : fallbackIdentifier;
+
+      if (/^\d+$/.test(telegramValue)) return telegramValue;
+
+      // If we have @username (either in contact or in channel.identifier), resolve to chat_id.
+      if (telegramValue) {
+        const byUsername = await resolveTelegramChatIdByUsername(telegramValue);
+        if (byUsername) return byUsername;
+      }
+
+      // Fallback: resolve by WhatsApp phone (after user shares phone in bot).
+      if (contact) {
+        const whatsappPhone = contact.contacts.find((c) => c.type === 'whatsapp')?.value ?? '';
+        const byPhone = await resolveTelegramChatIdByPhone(whatsappPhone);
+        if (byPhone) return byPhone;
+      }
+
+      return null;
     }
-    
-    // For telegram_personal, we need phone number
+
+    // Legacy: treat telegram_personal as "send via bot but resolve by phone".
     if (channel.type === 'telegram_personal') {
-      const personalContact = contact.contacts.find(c => 
-        c.type === 'telegram_personal' || 
-        (c.type === 'telegram' && c.value.startsWith('+'))
-      );
-      return personalContact?.value || null;
+      const phone = contact
+        ? (contact.contacts.find((c) => c.type === 'telegram_personal')?.value ??
+          contact.contacts.find((c) => c.type === 'whatsapp')?.value ??
+          contact.contacts.find((c) => c.type === 'telegram' && c.value.startsWith('+'))?.value ??
+          '')
+        : fallbackIdentifier;
+
+      return await resolveTelegramChatIdByPhone(phone);
     }
-    
-    // For other channels, find matching type
-    const contactInfo = contact.contacts.find(c => c.type === channel.type);
+
+    // For other channels, use contact mapping if available, otherwise fallback to channel identifier.
+    if (!contact) return fallbackIdentifier || null;
+
+    const contactInfo = contact.contacts.find((c) => c.type === channel.type);
     return contactInfo?.value || null;
   };
 
@@ -70,11 +132,12 @@ export function SendMessageModal({
       if (onSend) {
         await onSend(channel.id, message.trim());
       } else if (channel.type === 'telegram' || channel.type === 'telegram_personal') {
-        // Real Telegram sending
-        const chatId = getChatId();
-        
+        const chatId = await resolveDestinationId();
+
         if (!chatId) {
-          throw new Error('Не найден chat_id для отправки');
+          throw new Error(
+            'Не найден chat_id для отправки. Нажмите /start в боте и поделитесь номером телефона.'
+          );
         }
 
         const { data, error: funcError } = await supabase.functions.invoke('send-telegram-message', {
@@ -93,9 +156,9 @@ export function SendMessageModal({
         }
       } else {
         // Simulate sending for other channels
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-      
+
       setSuccess(true);
       // Auto-close after success
       setTimeout(() => {
