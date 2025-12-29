@@ -63,6 +63,18 @@ export const mockConnectedChannels: ConnectedChannel[] = [
 // Mock contacts
 export const mockContacts: Contact[] = [
   {
+    id: 'c-0',
+    name: 'Дмитрий Рикман',
+    contacts: [
+      { type: 'telegram', value: '+79859578792' },
+    ],
+    tags: [],
+    created_at: '2025-12-29',
+    last_message_at: null,
+    updated_at: '2025-12-29',
+    preferred_channel_id: 'ch-1',
+  },
+  {
     id: 'c-1',
     name: 'Нет данных',
     contacts: [
