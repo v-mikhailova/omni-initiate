@@ -138,10 +138,7 @@ export const mockContacts: Contact[] = [
     id: 'c-5',
     name: 'Симкин Александр',
     contacts: [
-      { type: 'telegram', value: '559843733' },
-      { type: 'telegram_personal', value: '+79522245854' },
-      { type: 'whatsapp', value: '+79106200250' },
-      { type: 'max', value: '4061763' },
+      { type: 'whatsapp', value: '+79196200250' },
     ],
     tags: ['VIP'],
     created_at: '2025-11-17',
